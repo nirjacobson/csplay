@@ -7,10 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNODEBUG")
 
 include_directories("/usr/include/glib-2.0")
-include_directories("/usr/lib64/glib-2.0/include")
-include_directories("/usr/include/sigc++-3.0")
-include_directories("/usr/lib64/glibmm-2.68/include")
 include_directories("/usr/include/glibmm-2.68")
+include_directories("/usr/include/sigc++-3.0")
+include_directories("/usr/lib64/glib-2.0/include")
+include_directories("/usr/lib64/glibmm-2.68/include")
 include_directories("/usr/lib64/sigc++-3.0/include")
 include_directories(${CMAKE_SOURCE_DIR})
 
