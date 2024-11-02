@@ -79,6 +79,11 @@ char* pcmToVgm(const char* path, size_t* vgmSize) {
 
 int main(int argc, char *argv[])
 {
+    if (argc < 2 || access(argv[argc - 1], F_OK) == -1) {
+        usage();
+        return 0;
+    }
+
     AudioOutput<int16_t>* audioOutput = nullptr;
     Chromasound* chromasound;
 
@@ -93,11 +98,6 @@ int main(int argc, char *argv[])
     tcsetattr(STDIN_FILENO, TCSANOW, &t);
 
     int i = 1;
-
-    if (argc < 2 || access(argv[argc - 1], F_OK) == -1) {
-        usage();
-        return 0;
-    }
 
     if (cmdOptionExists(argv, argv + argc, "-direct")) {
         chromasound = new Chromasound_Direct;
