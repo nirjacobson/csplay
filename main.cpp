@@ -99,7 +99,15 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (cmdOptionExists(argv, argv + argc, "-emu")) {
+    if (cmdOptionExists(argv, argv + argc, "-direct")) {
+        chromasound = new Chromasound_Direct;
+        
+        i++;
+    } else {
+        if (cmdOptionExists(argv, argv + argc, "-emu")) {
+            i++;
+        }
+
         chromasound = new Chromasound_Emu;
         audioOutput = AudioOutput<int16_t>::instance();
 
@@ -110,13 +118,6 @@ int main(int argc, char *argv[])
 
         audioOutput->openDefault(1024);
         audioOutput->start();
-        
-        i++;
-    } else {
-        if (cmdOptionExists(argv, argv + argc, "-direct")) {
-            i++;
-        }
-        chromasound = new Chromasound_Direct;
     }
 
     for (i; i < argc; i++) {
