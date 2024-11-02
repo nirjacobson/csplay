@@ -40,6 +40,43 @@ void usage() {
     std::cout << std::endl;
 }
 
+char* pcmToVgm(const char* path, size_t* vgmSize) {
+    FILE* pcmFile = fopen(path, "rb");
+
+    fseek(pcmFile, 0, SEEK_END);
+    size_t pcmSize = ftell(pcmFile);
+    fseek(pcmFile, 0, SEEK_SET);
+
+    char* pcmData = new char[pcmSize];
+
+    size_t bytesRead = 0;
+    while (bytesRead < pcmSize) {
+        bytesRead += fread(pcmData + bytesRead, 1, pcmSize - bytesRead, pcmFile);
+    }
+
+    fclose(pcmFile);
+
+    *vgmSize = 128 + (pcmSize / 2) + 7;
+
+    char* vgm = new char[*vgmSize];
+
+    VGM::generateHeader(vgm, *vgmSize - 128, pcmSize, 0, 0, false);
+
+    vgm[128] = 0x97;
+    vgm[129] = 0xFE;
+    *(uint32_t*)&vgm[130] = pcmSize / 2;
+
+    for (size_t i = 0, j = 0; i < pcmSize; i += 2, j++) {
+        vgm[134 + j] = pcmData[i];
+    }
+
+    vgm[*vgmSize - 1] = 0x66;
+
+    free(pcmData);
+
+    return vgm;
+}
+
 int main(int argc, char *argv[])
 {
     AudioOutput<int16_t>* audioOutput = nullptr;
@@ -87,27 +124,39 @@ int main(int argc, char *argv[])
         std::string absolutePath = std::filesystem::absolute(p);
         std::string realPath = realpath(absolutePath.c_str(), nullptr);
 
-        GD3 gd3 = GD3::parseGd3(realPath);
+        FILE* vgmFile = nullptr;
+        char* vgm = nullptr;
+        size_t vgmSize;
 
-        std::cout << gd3.title() << std::endl;
-        std::cout << gd3.game() << std::endl;
-        std::cout << gd3.author() << std::endl;
-        std::cout << gd3.releaseDate() << std::endl << std::endl;
-
-        FILE* file = fopen(realPath.c_str(), "rb");
-
-        fseek(file, 0, SEEK_END);
-        size_t size = ftell(file);
-        fseek(file, 0, SEEK_SET);
-
-        char* vgm = new char[size];
-
-        size_t bytesRead = 0;
-        while (bytesRead < size) {
-            bytesRead += fread(vgm + bytesRead, 1, size - bytesRead, file);
+        if (realPath.ends_with("pcm")) {
+            vgm = pcmToVgm(realPath.c_str(), &vgmSize);
         }
 
-        chromasound->play(vgm, size, 0, 0);
+        if (!vgm) {
+            GD3 gd3 = GD3::parseGd3(realPath);
+
+            std::cout << gd3.title() << std::endl;
+            std::cout << gd3.game() << std::endl;
+            std::cout << gd3.author() << std::endl;
+            std::cout << gd3.releaseDate() << std::endl << std::endl;
+
+            vgmFile = fopen(realPath.c_str(), "rb");
+
+            fseek(vgmFile, 0, SEEK_END);
+            vgmSize = ftell(vgmFile);
+            fseek(vgmFile, 0, SEEK_SET);
+
+            vgm = new char[vgmSize];
+
+            size_t bytesRead = 0;
+            while (bytesRead < vgmSize) {
+                bytesRead += fread(vgm + bytesRead, 1, vgmSize - bytesRead, vgmFile);
+            }
+        } else {
+            std::cout << realPath.substr(realPath.find_last_of('/') + 1) << std::endl << std::endl;
+        }
+
+        chromasound->play(vgm, vgmSize, 0, 0);
 
         timeval timer = { 0, 0 };
         bool quit = false;
@@ -162,7 +211,7 @@ int main(int argc, char *argv[])
         chromasound->stop();
 
         free(vgm);
-        fclose(file);
+        if (vgmFile) fclose(vgmFile);
 
         if (quit) {
             break;
