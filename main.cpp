@@ -111,6 +111,8 @@ int main(int argc, char *argv[])
         chromasound = new Chromasound_Emu;
         audioOutput = AudioOutput<int16_t>::instance();
 
+        int stderr_old = dup(STDERR_FILENO);
+
         freopen("/dev/null", "w", stderr);
 
         audioOutput->init();
@@ -118,6 +120,8 @@ int main(int argc, char *argv[])
 
         audioOutput->openDefault(1024);
         audioOutput->start();
+
+        stderr = fdopen(stderr_old, "r");
     }
 
     for (i; i < argc; i++) {
