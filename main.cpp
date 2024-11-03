@@ -5,12 +5,19 @@
 #include <cstdlib>
 #include <fcntl.h>
 #include <termios.h>
+#include <cstdio>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "chromasound/emu/audio_output.h"
 #include "chromasound/chromasound.h"
 #include "chromasound/chromasound_emu.h"
 #include "chromasound/chromasound_direct.h"
 #include "formats/gd3.h"
+
+#define READ_END    0
+#define WRITE_END   1
 
 char* getCmdOption(char** begin, char** end, const std::string& option) {
     char** itr = std::find(begin, end, option);
@@ -24,20 +31,66 @@ bool cmdOptionExists(char** begin, char** end, const std::string& option) {
     return std::find(begin, end, option) != end;
 }
 
-void usage() {
-    std::cout << "csplay" << std::endl;
+bool isRaspberryPi() {
+    id_t pid;
+    int p[2];
 
+    pipe(p);
+    pid = fork();
+
+    if (pid == 0) {
+        dup2(p[WRITE_END], STDOUT_FILENO);
+        close(p[READ_END]);
+        close(p[WRITE_END]);
+
+        char* argv[4] = {
+            new char[strlen("grep")+1],
+            new char[strlen("Model")+1],
+            new char[strlen("/proc/cpuinfo")],
+            NULL
+        };
+        strcpy(argv[0], "grep");
+        strcpy(argv[1], "Model");
+        strcpy(argv[2], "/proc/cpuinfo");
+        execvp("grep", argv);
+    } else {
+        close(p[WRITE_END]);
+
+        std::stringstream ss;
+        char buf[512];
+        int bytes;
+        while ((bytes = read(p[READ_END], buf, 512)) > 0) {
+            buf[bytes] = '\0';
+            ss << buf;
+        }
+
+        int status;
+        close(p[READ_END]);
+        waitpid(pid, &status, 0);
+
+        std::string str;
+        std::getline(ss, str);
+
+        return str.find("Raspberry Pi") != std::string::npos;
+    }
+}
+
+void usage() {
     std::cout << "Usage: csplay [options] [files]" << std::endl << std::endl;
 
     std::cout << "Options:" << std::endl;
 
     std::cout << std::left << std::setw(20) <<  "\t-emu";
-    std::cout << "Play using the emulator on the system's default audio output";
-    std::cout << std::endl;
+    std::cout << "Play using the emulator on the system's" << std::endl;
+    std::cout << std::left << std::setw(20) << '\t';
+    std::cout << "default audio output (default)" << std::endl;
     
-    std::cout << std::left << std::setw(20) <<  "\t-direct";
-    std::cout << "Play using a Chromasound Direct HAT";
-    std::cout << std::endl;
+    if (isRaspberryPi()) {
+        std::cout << std::endl;
+        std::cout << std::left << std::setw(20) <<  "\t-direct";
+        std::cout << "Play using a Chromasound Direct HAT";
+        std::cout << std::endl << std::endl;
+    }
 }
 
 char* pcmToVgm(const char* path, size_t* vgmSize) {
@@ -100,14 +153,15 @@ int main(int argc, char *argv[])
     int i = 1;
 
     if (cmdOptionExists(argv, argv + argc, "-direct")) {
-        chromasound = new Chromasound_Direct;
-        
         i++;
-    } else {
-        if (cmdOptionExists(argv, argv + argc, "-emu")) {
-            i++;
-        }
+    }
+    if (cmdOptionExists(argv, argv + argc, "-emu")) {
+        i++;
+    }
 
+    if (isRaspberryPi() && cmdOptionExists(argv, argv + argc, "-direct")) {
+        chromasound = new Chromasound_Direct;
+    } else {
         chromasound = new Chromasound_Emu;
         audioOutput = AudioOutput<int16_t>::instance();
 
