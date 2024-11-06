@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <fstream>
 
 #include "chromasound/emu/audio_output.h"
 #include "chromasound/chromasound.h"
@@ -32,47 +33,20 @@ bool cmdOptionExists(char** begin, char** end, const std::string& option) {
 }
 
 bool isRaspberryPi() {
-    id_t pid;
-    int p[2];
+    std::ifstream ifstream("/proc/cpuinfo");
 
-    pipe(p);
-    pid = fork();
-
-    if (pid == 0) {
-        dup2(p[WRITE_END], STDOUT_FILENO);
-        close(p[READ_END]);
-        close(p[WRITE_END]);
-
-        char* argv[4] = {
-            new char[strlen("grep")+1],
-            new char[strlen("Model")+1],
-            new char[strlen("/proc/cpuinfo")],
-            NULL
-        };
-        strcpy(argv[0], "grep");
-        strcpy(argv[1], "Model");
-        strcpy(argv[2], "/proc/cpuinfo");
-        execvp("grep", argv);
-    } else {
-        close(p[WRITE_END]);
-
-        std::stringstream ss;
-        char buf[512];
-        int bytes;
-        while ((bytes = read(p[READ_END], buf, 512)) > 0) {
-            buf[bytes] = '\0';
-            ss << buf;
+    std::string line;
+    while (std::getline(ifstream, line)) {
+        if (line.starts_with("Model")) {
+            if (line.find("Raspberry Pi") != std::string::npos) {
+                ifstream.close();
+                return true;
+            }
         }
-
-        int status;
-        close(p[READ_END]);
-        waitpid(pid, &status, 0);
-
-        std::string str;
-        std::getline(ss, str);
-
-        return str.find("Raspberry Pi") != std::string::npos;
     }
+
+    ifstream.close();
+    return false;
 }
 
 void usage() {
