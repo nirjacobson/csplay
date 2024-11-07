@@ -14,7 +14,7 @@ include_directories("/usr/lib64/glibmm-2.68/include")
 include_directories("/usr/lib64/sigc++-3.0/include")
 include_directories(${CMAKE_SOURCE_DIR})
 
-set(LINUX_ARM ON)
+set(LINUX_ARM OFF)
 
 set(PROJECT_SOURCES
     formats/gd3.cpp
