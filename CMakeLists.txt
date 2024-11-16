@@ -14,8 +14,6 @@ include_directories("/usr/lib64/glibmm-2.68/include")
 include_directories("/usr/lib64/sigc++-3.0/include")
 include_directories(${CMAKE_SOURCE_DIR})
 
-set(LINUX_ARM OFF)
-
 set(PROJECT_SOURCES
     formats/gd3.cpp
     formats/vgm.cpp
@@ -50,8 +48,4 @@ add_executable(csplay
     ${PROJECT_SOURCES}
 )
 
-if (LINUX_ARM)
-    target_link_libraries(csplay PRIVATE sigc-3.0 glibmm-2.68 /usr/lib64/libportaudio.so z)
-else()
-    target_link_libraries(csplay PRIVATE sigc-3.0 glibmm-2.68 /usr/x86_64-pc-linux-gnu/usr/lib64/libportaudio.so z)
-endif()
+target_link_libraries(csplay PRIVATE sigc-3.0 glibmm-2.68 /usr/lib64/libportaudio.so z)
