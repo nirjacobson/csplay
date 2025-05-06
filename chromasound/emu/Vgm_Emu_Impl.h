@@ -39,8 +39,6 @@ class Vgm_Emu_Impl : public Classic_Emu, private Dual_Resampler {
 
         void set_opll_patchset( int patchset );
 
-        void set_pcm_data(const char* path);
-
         void set_pcm_discrete(bool discrete);
 
     protected:

@@ -18,8 +18,6 @@ class Chromasound_Emu : public Chromasound, public Producer<int16_t>
         Chromasound_Emu();
         ~Chromasound_Emu();
 
-        void setPCMData(const char* path);
-
         sig_pcm_upload_started signalPcmUploadStarted();
         sig_pcm_upload_finished signalPcmUploadFinished();
 

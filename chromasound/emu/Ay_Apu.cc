@@ -28,7 +28,7 @@ int const period_factor = 16;
 
 static byte const amp_table [16] =
 {
-#define ENTRY( n ) byte (n * Ay_Apu::amp_range + 0.5)
+#define ENTRY( n ) byte (n * (int)Ay_Apu::amp_range + 0.5)
     // With channels tied together and 1K resistor to ground (as datasheet recommends),
     // output nearly matches logarithmic curve as claimed. Approx. 1.5 dB per step.
     ENTRY(0.000000),ENTRY(0.007813),ENTRY(0.011049),ENTRY(0.015625),

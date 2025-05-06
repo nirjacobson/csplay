@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
         audioOutput->init();
         audioOutput->producer(dynamic_cast<Chromasound_Emu*>(chromasound));
 
-        audioOutput->openDefault(1024);
+        audioOutput->open(audioOutput->defaultDevice(), 1024);
         audioOutput->start();
 
         stderr = fdopen(stderr_old, "r");

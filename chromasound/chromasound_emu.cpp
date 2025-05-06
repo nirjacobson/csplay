@@ -59,11 +59,6 @@ Chromasound::sig_pcm_upload_finished Chromasound_Emu::signalPcmUploadFinished() 
     return _signalPcmUploadFinished;
 }
 
-void Chromasound_Emu::setPCMData(const char* path)
-{
-    dynamic_cast<Vgm_Emu_Impl*>(_emu)->set_pcm_data(path);
-}
-
 void Chromasound_Emu::setEqualizer()
 {
     int _bass = 0;

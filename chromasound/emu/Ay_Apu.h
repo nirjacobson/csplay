@@ -72,7 +72,7 @@ class Ay_Apu {
 };
 
 inline void Ay_Apu::volume( double v ) {
-    synth_.volume( 0.7 / osc_count / amp_range * v );
+    synth_.volume( 0.7 / (int)osc_count / (int)amp_range * v );
 }
 
 inline void Ay_Apu::treble_eq( blip_eq_t const& eq ) {

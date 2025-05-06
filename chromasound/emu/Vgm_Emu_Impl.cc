@@ -133,18 +133,6 @@ void Vgm_Emu_Impl::set_opll_patchset(int patchset)
     ym2413.reset_patch( patchset );
 }
 
-void Vgm_Emu_Impl::set_pcm_data(const char* path)
-{
-    Std_File_Reader reader;
-    reader.open(path);
-
-    long size = reader.size();
-    pcm_data.resize(size);
-    reader.read(pcm_data.begin(), size);
-
-    reader.close();
-}
-
 void Vgm_Emu_Impl::set_pcm_discrete(bool discrete)
 {
     pcm_discrete = discrete;
@@ -180,7 +168,7 @@ blip_time_t Vgm_Emu_Impl::run_commands( vgm_time_t end_time )
     byte const* pos = this->pos;
 
     if (samples > 0) {
-        for (uint32_t i = samples_offset; i < samples && vgm_time < end_time; i++) {
+        for (int i = samples_offset; i < samples && vgm_time < end_time; i++) {
             if (inlinePCMPos) {
                 write_pcm( vgm_time, *inlinePCMPos++ );
                 vgm_time += 2;
@@ -292,7 +280,7 @@ blip_time_t Vgm_Emu_Impl::run_commands( vgm_time_t end_time )
                 samples = *(uint32_t*)pos;
                 samples_offset = 0;
                 inlinePCMPos = NULL;
-                for (uint32_t i = 0; i < samples && vgm_time < end_time; i++) {
+                for (int i = 0; i < samples && vgm_time < end_time; i++) {
                     write_pcm( vgm_time++, pcm_read() );
                     samples_offset++;
                 }
@@ -302,7 +290,7 @@ blip_time_t Vgm_Emu_Impl::run_commands( vgm_time_t end_time )
                 samples = *(uint32_t*)&pos[1];
                 samples_offset = 0;
                 inlinePCMPos = &pos[5];
-                for (uint32_t i = 0; i < samples && vgm_time < end_time; i++) {
+                for (int i = 0; i < samples && vgm_time < end_time; i++) {
                     write_pcm( vgm_time, pos[5 + i] );
                     vgm_time += 2;
                     samples_offset++;
