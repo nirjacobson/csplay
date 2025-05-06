@@ -133,11 +133,6 @@ void Vgm_Emu_Impl::set_opll_patchset(int patchset)
     ym2413.reset_patch( patchset );
 }
 
-void Vgm_Emu_Impl::set_pcm_discrete(bool discrete)
-{
-    pcm_discrete = discrete;
-}
-
 int Vgm_Emu_Impl::pcm_read()
 {
     int result = 0x00;

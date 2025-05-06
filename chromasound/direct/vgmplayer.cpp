@@ -319,6 +319,8 @@ void VGMPlayer::runPlayback()
         }
     }
 
+    spi_write_wait(DISCRETE_PCM);
+
     gettimeofday(&_timer, NULL);
     _playing = true;
 
