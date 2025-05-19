@@ -48,4 +48,11 @@ add_executable(csplay
     ${PROJECT_SOURCES}
 )
 
-target_link_libraries(csplay PRIVATE sigc-3.0 glibmm-2.68 /usr/lib64/libportaudio.so z)
+target_link_libraries(csplay PRIVATE sigc-3.0 glibmm-2.68 portaudio z)
+
+include(GNUInstallDirs)
+install(TARGETS csplay
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
